@@ -2,7 +2,13 @@ def call(codeNumber) {
     script {
         while (true) {
           withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'commerceCloudCredentials', usernameVariable: 'subscriptionId', passwordVariable: 'token']]) {
-              result = sh (script: "curl --location --request GET 'https://portalrotapi.hana.ondemand.com/v2/subscriptions/${subscriptionId}/builds/$codeNumber' --header 'Authorization: Bearer ${token}'",returnStdout:true)
+              def cmdUnix = "curl --location --request GET 'https://portalrotapi.hana.ondemand.com/v2/subscriptions/${subscriptionId}/builds/$codeNumber' --header 'Authorization: Bearer ${token}'"
+              def cmdWin  = 'curl --location --request GET "https://portalrotapi.hana.ondemand.com/v2/subscriptions/${subscriptionId}/builds/$codeNumber" --header "Authorization: Bearer ${token}"'
+              if (isUnix()) {
+                  result = sh (script: cmdUnix, returnStdout:true)
+              } else {
+                  result = bat (script: cmdWin, returnStdout:true)
+              }
           }
           echo "$result"
           statusResult = readJSON text: "$result"
@@ -15,7 +21,11 @@ def call(codeNumber) {
             error("Build was not completed successfully on SAP Commerce Cloud")
           }
 
-          sh('sleep 120s')
+          if (isUnix()) {
+              sh('sleep 120s')
+          } else {
+              bat('ping -n 121 127.0.0.1 >nul')
+          }
 
         }
 

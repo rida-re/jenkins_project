@@ -1,6 +1,6 @@
 def pipelineRepo = 'https://github.com/rida-rech/jenkins_project.git'
 def projectRepo = 'https://github.com/SAP-samples/cloud-commerce-sample-setup'
-def projectTag = '2105-spartacus'
+def projectTag = 'main'
 def sonarUrl = 'http://localhost:9000'
 def projectRepoName = 'cloud-commerce-sample-setup'
 def packageToTest = 'com.projectName.*'
@@ -24,7 +24,7 @@ class JobParameters {
     static void setLibraryBranchParam(job) {
         job.with {
             parameters {
-                stringParam('LIBRARY_BRANCH', 'master', 'Library branch name')
+                stringParam('LIBRARY_BRANCH', 'main', 'Library branch name')
             }
         }
     }

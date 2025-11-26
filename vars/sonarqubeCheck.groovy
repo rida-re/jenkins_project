@@ -15,10 +15,19 @@ def call(branch, commerceDir, projectName, sonarUrl) {
 
     script {
         SONAR_CHECK_URL = "$sonarUrl/api/qualitygates/project_status?projectKey=$projectName:$BRANCH_WITH_DASH"
-        output = sh(returnStdout: true, script: "echo \$(curl $SONAR_CHECK_URL | jq '.projectStatus.status')")
+        if (isUnix()) {
+            output = sh(returnStdout: true, script: "echo \$(curl $SONAR_CHECK_URL | jq '.projectStatus.status')")
+        } else {
+            output = bat(returnStdout: true, script: 'for /f %%%%a in (''curl %SONAR_CHECK_URL% ^| jq \''.projectStatus.status\''') do @echo %%%%a')
+        }
         while (output.contains("NONE")) {
-          sh('sleep 10s')
-          output = sh(returnStdout: true, script: "echo \$(curl $SONAR_CHECK_URL | jq '.projectStatus.status')")
+          if (isUnix()) {
+              sh('sleep 10s')
+              output = sh(returnStdout: true, script: "echo \$(curl $SONAR_CHECK_URL | jq '.projectStatus.status')")
+          } else {
+              bat('ping -n 11 127.0.0.1 >nul')
+              output = bat(returnStdout: true, script: 'for /f %%%%a in (''curl %SONAR_CHECK_URL% ^| jq \''.projectStatus.status\''') do @echo %%%%a')
+          }
         }
         if (output.contains("ERROR")) {
             currentBuild.result = 'UNSTABLE'
